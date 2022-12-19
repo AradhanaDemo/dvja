@@ -1,7 +1,7 @@
 version: '2'
 services:
   mysql:
-    image: mysql:5.5
+    image: mysql:latest
     volumes:
       - mysql:/var/lib/mysql
     environment:
