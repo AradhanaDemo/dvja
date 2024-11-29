@@ -18,7 +18,7 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.apache.struts</groupId>
+            <groupId>org.apache.struts</1groupId>
             <artifactId>struts2-core</artifactId>
             <version>${struts2.version}</version>
         </dependency>
