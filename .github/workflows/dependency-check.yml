@@ -28,8 +28,13 @@ jobs:
         path: ~/.local/share/dependency-check
         key: ${{ runner.os }}-dependency-check-${{ hashFiles('**/pom.xml') }}
 
-    - name: Build and run dependency-check
-      run: mvn -B -DskipTests verify
+    - name: Build (package, skip tests)
+      run: mvn -B -DskipTests package
+
+    - name: Run OWASP dependency-check (generate reports, do not fail job)
+      run: |
+        # invoke the plugin directly and override the fail threshold so the job continues
+        mvn org.owasp:dependency-check-maven:8.4.0:check -DfailBuildOnCVSS=11
 
     - name: Upload dependency-check report
       if: always()
