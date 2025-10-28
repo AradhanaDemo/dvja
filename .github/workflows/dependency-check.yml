@@ -31,10 +31,22 @@ jobs:
     - name: Build (package, skip tests)
       run: mvn -B -DskipTests package
 
-    - name: Run OWASP dependency-check (generate reports, do not fail job)
+    - name: Check for NVD API key
       run: |
-        # invoke the plugin directly and override the fail threshold so the job continues
-        mvn org.owasp:dependency-check-maven:8.4.0:check -DfailBuildOnCVSS=11
+        if [ -z "$NVD_API_KEY" ]; then
+          echo "WARNING: NVD_API_KEY secret not set. Dependency-Check may fail to download NVD feeds (HTTP 403)."
+        else
+          echo "NVD_API_KEY is configured. Dependency-Check will attempt authenticated feed download."
+        fi
+      env:
+        NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+
+    - name: Run OWASP dependency-check (generate reports, do not fail job)
+      env:
+        NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+      run: |
+        # invoke the plugin directly, pass NVD API key via -Dnvd.api.key and override the fail threshold
+        mvn org.owasp:dependency-check-maven:8.4.0:check -DfailBuildOnCVSS=11 -Dnvd.api.key="$NVD_API_KEY"
 
     - name: Upload dependency-check report
       if: always()
