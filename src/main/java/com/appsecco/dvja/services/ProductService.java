@@ -45,7 +45,8 @@ public class ProductService {
     }
 
     public List<Product> findContainingName(String name) {
-        Query query = entityManager.createQuery("SELECT p FROM Product p WHERE p.name LIKE '%" + name + "%'");
+        Query query = entityManager.createQuery("SELECT p FROM Product p WHERE p.name LIKE :name");
+        query.setParameter("name", "%" + name + "%");
         List<Product> resultList = query.getResultList();
 
         return resultList;

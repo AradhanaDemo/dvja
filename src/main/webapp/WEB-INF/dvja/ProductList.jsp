@@ -39,7 +39,7 @@
             <s:iterator value="products">
             <tr>
                 <td><s:property value="id"/></td>
-                <td><s:property value="name" escape="false"/></td>
+                <td><s:property value="name" escape="true"/></td>
                 <td><s:property value="code"/></td>
                 <td><s:property value="tags"/></td>
                 <td>

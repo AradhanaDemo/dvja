@@ -72,7 +72,9 @@ public class UserService {
     }
 
     public User findByLoginUnsafe(String login) {
-        Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.login = '" + login + "'");
+        Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.login = :login")
+                .setParameter("login", login)
+                .setMaxResults(1);
         List<User> resultList = query.getResultList();
 
         if(resultList.size() > 0)
