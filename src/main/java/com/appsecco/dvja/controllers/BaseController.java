@@ -18,16 +18,25 @@ public class BaseController extends ActionSupport implements ServletRequestAware
 
     private HttpServletRequest servletRequest;
     private Map<String, Object> session;
+    // Lock to protect lazy initialization and mutations of the session map
+    private final Object sessionLock = new Object();
 
     public Map<String, Object> getSession() {
-        if(session == null)
-            session = ActionContext.getContext().getSession();
+        if (session == null) {
+            synchronized (sessionLock) {
+                if (session == null) {
+                    session = ActionContext.getContext().getSession();
+                }
+            }
+        }
         return session;
     }
 
     @Override
     public void setSession(Map<String, Object> session) {
-        this.session = session;
+        synchronized (sessionLock) {
+            this.session = session;
+        }
     }
 
     public HttpServletRequest getServletRequest() {
@@ -44,15 +53,21 @@ public class BaseController extends ActionSupport implements ServletRequestAware
     }
 
     public void sessionSetUser(User user) {
-        session.put(Constant.SESSION_USER_HANDLE, user);
+        synchronized (sessionLock) {
+            getSession().put(Constant.SESSION_USER_HANDLE, user);
+        }
     }
 
     public User sessionGetUser() {
-        return ((User) getSession().get(Constant.SESSION_USER_HANDLE));
+        synchronized (sessionLock) {
+            return ((User) getSession().get(Constant.SESSION_USER_HANDLE));
+        }
     }
 
     public void sessionRemoveUser() {
-        session.remove(Constant.SESSION_USER_HANDLE);
+        synchronized (sessionLock) {
+            getSession().remove(Constant.SESSION_USER_HANDLE);
+        }
     }
 
     public String renderText(String txtMessage) {
