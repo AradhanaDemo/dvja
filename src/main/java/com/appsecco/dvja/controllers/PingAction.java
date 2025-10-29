@@ -45,20 +45,23 @@ public class PingAction extends BaseController {
         String[] command = { "/bin/bash", "-c", "ping -t 5 -c 5 " + getAddress() };
         Process process = runtime.exec(command);
 
-        BufferedReader  stdinputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line = null;
-        String output = "Output:\n\n";
+        StringBuilder output = new StringBuilder("Output:\n\n");
+        
+        try (BufferedReader stdInputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+             BufferedReader stdErrorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+            
+            String line;
 
-        while((line = stdinputReader.readLine()) != null)
-            output += line + "\n";
+            while((line = stdInputReader.readLine()) != null)
+                output.append(line).append("\n");
 
-        output += "\n";
-        output += "Error:\n\n";
+            output.append("\n");
+            output.append("Error:\n\n");
 
-        stdinputReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        while((line = stdinputReader.readLine()) != null)
-            output += line + "\n";
+            while((line = stdErrorReader.readLine()) != null)
+                output.append(line).append("\n");
+        }
 
-        setCommandOutput(output);
+        setCommandOutput(output.toString());
     }
 }

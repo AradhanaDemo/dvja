@@ -25,7 +25,9 @@ public class ProductService {
     public EntityManager getEntityManager() { return this.entityManager; }
 
     public void save(Product product) {
-        logger.debug("Saving product with name: " + product.getName());
+        if(logger.isDebugEnabled()) {
+            logger.debug("Saving product with name: " + product.getName());
+        }
 
         if(product.getId() != null)
             entityManager.merge(product);
@@ -39,15 +41,11 @@ public class ProductService {
 
     public List<Product> findAll() {
         Query query = entityManager.createQuery("SELECT p FROM Product p");
-        List<Product> resultList = query.getResultList();
-
-        return resultList;
+        return query.getResultList();
     }
 
     public List<Product> findContainingName(String name) {
         Query query = entityManager.createQuery("SELECT p FROM Product p WHERE p.name LIKE '%" + name + "%'");
-        List<Product> resultList = query.getResultList();
-
-        return resultList;
+        return query.getResultList();
     }
 }

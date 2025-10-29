@@ -11,6 +11,7 @@ import javax.persistence.Query;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Transactional
@@ -26,7 +27,9 @@ public class UserService {
     public EntityManager getEntityManager() { return this.entityManager; }
 
     public void save(User user) {
-        logger.debug("Saving user with login: " + user.getLogin() + " id: " + user.getId());
+        if(logger.isDebugEnabled()) {
+            logger.debug("Saving user with login: " + user.getLogin() + " id: " + user.getId());
+        }
 
         if(user.getPassword() != null)
             user.setPassword(hashEncodePassword(user.getPassword()));
@@ -54,9 +57,7 @@ public class UserService {
 
     public List<User> findAllUsers() {
         Query query = entityManager.createQuery("SELECT u FROM User u");
-        List<User> resultList = query.getResultList();
-
-        return resultList;
+        return query.getResultList();
     }
 
     public User findByLogin(String login) {
@@ -65,20 +66,14 @@ public class UserService {
                 setMaxResults(1);
         List<User> resultList = query.getResultList();
 
-        if(resultList.size() > 0)
-            return resultList.get(0);
-        else
-            return null;
+        return resultList.isEmpty() ? null : resultList.get(0);
     }
 
     public User findByLoginUnsafe(String login) {
         Query query = entityManager.createQuery("SELECT u FROM User u WHERE u.login = '" + login + "'");
         List<User> resultList = query.getResultList();
 
-        if(resultList.size() > 0)
-            return resultList.get(0);
-        else
-            return null;
+        return resultList.isEmpty() ? null : resultList.get(0);
     }
 
     public boolean resetPasswordByLogin(String login, String key,
@@ -87,11 +82,13 @@ public class UserService {
         if(!StringUtils.equals(password, passwordConfirmation))
             return false;
 
-        if(!StringUtils.equalsIgnoreCase(DigestUtils.md5DigestAsHex(login.getBytes()), key))
+        if(!StringUtils.equalsIgnoreCase(DigestUtils.md5DigestAsHex(login.getBytes(StandardCharsets.UTF_8)), key))
             return false;
 
-        logger.info("Changing password for login: " + login +
-                " New password: " + password);
+        if(logger.isInfoEnabled()) {
+            logger.info("Changing password for login: " + login +
+                    " New password: " + password);
+        }
 
         User user = findByLogin(login);
         if(user != null) {
@@ -101,11 +98,13 @@ public class UserService {
             return true;
         }
 
-        logger.info("Failed to find user with login: " + login);
+        if(logger.isInfoEnabled()) {
+            logger.info("Failed to find user with login: " + login);
+        }
         return false;
     }
 
     private String hashEncodePassword(String password) {
-        return DigestUtils.md5DigestAsHex(password.getBytes());
+        return DigestUtils.md5DigestAsHex(password.getBytes(StandardCharsets.UTF_8));
     }
 }
