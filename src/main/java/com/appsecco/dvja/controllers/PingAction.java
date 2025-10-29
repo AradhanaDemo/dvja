@@ -45,20 +45,41 @@ public class PingAction extends BaseController {
         String[] command = { "/bin/bash", "-c", "ping -t 5 -c 5 " + getAddress() };
         Process process = runtime.exec(command);
 
-        BufferedReader  stdinputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line = null;
-        String output = "Output:\n\n";
+        StringBuilder output = new StringBuilder("Output:\n\n");
+        
+        BufferedReader stdInputReader = null;
+        BufferedReader stdErrorReader = null;
+        
+        try {
+            stdInputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
 
-        while((line = stdinputReader.readLine()) != null)
-            output += line + "\n";
+            while((line = stdInputReader.readLine()) != null)
+                output.append(line).append("\n");
 
-        output += "\n";
-        output += "Error:\n\n";
+            output.append("\n");
+            output.append("Error:\n\n");
 
-        stdinputReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        while((line = stdinputReader.readLine()) != null)
-            output += line + "\n";
+            stdErrorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            while((line = stdErrorReader.readLine()) != null)
+                output.append(line).append("\n");
+        } finally {
+            if(stdInputReader != null) {
+                try {
+                    stdInputReader.close();
+                } catch(IOException e) {
+                    // Ignore
+                }
+            }
+            if(stdErrorReader != null) {
+                try {
+                    stdErrorReader.close();
+                } catch(IOException e) {
+                    // Ignore
+                }
+            }
+        }
 
-        setCommandOutput(output);
+        setCommandOutput(output.toString());
     }
 }
