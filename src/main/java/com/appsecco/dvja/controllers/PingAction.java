@@ -47,11 +47,9 @@ public class PingAction extends BaseController {
 
         StringBuilder output = new StringBuilder("Output:\n\n");
         
-        BufferedReader stdInputReader = null;
-        BufferedReader stdErrorReader = null;
-        
-        try {
-            stdInputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        try (BufferedReader stdInputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+             BufferedReader stdErrorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+            
             String line;
 
             while((line = stdInputReader.readLine()) != null)
@@ -60,24 +58,8 @@ public class PingAction extends BaseController {
             output.append("\n");
             output.append("Error:\n\n");
 
-            stdErrorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             while((line = stdErrorReader.readLine()) != null)
                 output.append(line).append("\n");
-        } finally {
-            if(stdInputReader != null) {
-                try {
-                    stdInputReader.close();
-                } catch(IOException e) {
-                    // Ignore
-                }
-            }
-            if(stdErrorReader != null) {
-                try {
-                    stdErrorReader.close();
-                } catch(IOException e) {
-                    // Ignore
-                }
-            }
         }
 
         setCommandOutput(output.toString());
